@@ -6,7 +6,10 @@ way everyone using this does not depend on my or their own API key.
 
 I am going to be using the `DMI Radar map`. We are interested in when it rains,
 which is the default mode it is in upon opening the radar. It could look like
-![An image of the radar map.](/images/map.png)
+
+<p align="center">
+  <img src="/images/map.png">
+</p>
 
 To help recognize the pattern between the API calls, I have recorded some of them below.
 - https://www.dmi.dk/ZoombareKort/map?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&TIME=2024-06-28T06%3A50%3A00Z&REFERENCE_TIME=&LAYERS=radar&WIDTH=512&HEIGHT=512&SRS=EPSG%3A3575&STYLES=&BBOX=-78125%2C-3890625%2C250000%2C-3562500

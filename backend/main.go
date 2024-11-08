@@ -1,25 +1,60 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"io"
+	"net/http"
+	"os/exec"
+	"strconv"
+	"strings"
 )
 
-//TIP To run your code, right-click the code and select <b>Run</b>. Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.
-
-func main() {
-	//TIP Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined or highlighted text
-	// to see how GoLand suggests fixing it.
-	s := "gopher"
-	fmt.Println("Hello and welcome, %s!", s)
-
-	for i := 1; i <= 5; i++ {
-		//TIP You can try debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-		// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>. To start your debugging session,
-		// right-click your code in the editor and select the <b>Debug</b> option.
-		fmt.Println("i =", 100/i)
-	}
+type Map interface {
+	UpdateMap()
+	GetRainNiveauAt(location Location)
 }
 
-//TIP See GoLand help at <a href="https://www.jetbrains.com/help/go/">jetbrains.com/help/go/</a>.
-// Also, you can try interactive lessons for GoLand by selecting 'Help | Learn IDE Features' from the main menu.
+type LocationTransformer interface {
+	EPSG4326To3575(latitude float64, longitude float64) (int, int)
+}
+
+type CmdLocationTransformer struct {
+	stdin  io.WriteCloser
+	stdout io.ReadCloser
+}
+
+func (c *CmdLocationTransformer) EPSG4326To3575(latitude float64, longitude float64) (int, int) {
+	input := fmt.Sprintf("%f %f", latitude, longitude)
+	c.stdin.Write([]byte(input))
+	bufferedReader := bufio.NewReader(c.stdout)
+	output, _ := bufferedReader.ReadString('\n')
+	outputs := strings.Split(output, "\n")
+	x, _ := strconv.Atoi(outputs[0])
+	y, _ := strconv.Atoi(outputs[1])
+	return x, y
+}
+
+func makeCmdLocationTransformer() *CmdLocationTransformer {
+	cmdLocationTransformer := new(CmdLocationTransformer)
+	cmd := exec.Command("cs2cs", "EPSG:4326", "EPSG:3575")
+	cmdLocationTransformer.stdout, _ = cmd.StdoutPipe()
+	cmdLocationTransformer.stdin, _ = cmd.StdinPipe()
+	return cmdLocationTransformer
+}
+
+type Location struct {
+	Latitude  float64
+	Longitude float64
+}
+
+func main() {
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("welcome"))
+	})
+	http.ListenAndServe("127.0.0.1:3000", r)
+}

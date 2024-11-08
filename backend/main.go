@@ -14,11 +14,21 @@ import (
 
 type Map interface {
 	UpdateMap()
-	GetRainNiveauAt(location Location)
+	GetPrecipitationAt(location Location)
 }
 
 type LocationTransformer interface {
 	EPSG4326To3575(latitude float64, longitude float64) (int, int)
+}
+
+type StubLocationTransformer struct{}
+
+func (s *StubLocationTransformer) EPSG4326To3575(latitude float64, longitude float64) (int, int) {
+	return 8936, -3721180
+}
+
+func makeStubLocationTransformer() *StubLocationTransformer {
+	return new(StubLocationTransformer)
 }
 
 type CmdLocationTransformer struct {
@@ -31,9 +41,9 @@ func (c *CmdLocationTransformer) EPSG4326To3575(latitude float64, longitude floa
 	c.stdin.Write([]byte(input))
 	output, _ := c.stdout.ReadString('\n')
 	outputs := strings.Split(output, "\n")
-	x, _ := strconv.Atoi(outputs[0])
-	y, _ := strconv.Atoi(outputs[1])
-	return x, y
+	x, _ := strconv.ParseFloat(outputs[0], 64)
+	y, _ := strconv.ParseFloat(outputs[1], 64)
+	return int(x), int(y)
 }
 
 func makeCmdLocationTransformer() *CmdLocationTransformer {

@@ -30,4 +30,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Go-results-1.23
-          path: TestResults-1.23.json
+          path: ./backend/TestResults-1.23.json

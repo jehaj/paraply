@@ -23,14 +23,13 @@ type LocationTransformer interface {
 
 type CmdLocationTransformer struct {
 	stdin  io.WriteCloser
-	stdout io.ReadCloser
+	stdout *bufio.Reader
 }
 
 func (c *CmdLocationTransformer) EPSG4326To3575(latitude float64, longitude float64) (int, int) {
 	input := fmt.Sprintf("%f %f", latitude, longitude)
 	c.stdin.Write([]byte(input))
-	bufferedReader := bufio.NewReader(c.stdout)
-	output, _ := bufferedReader.ReadString('\n')
+	output, _ := c.stdout.ReadString('\n')
 	outputs := strings.Split(output, "\n")
 	x, _ := strconv.Atoi(outputs[0])
 	y, _ := strconv.Atoi(outputs[1])
@@ -40,7 +39,8 @@ func (c *CmdLocationTransformer) EPSG4326To3575(latitude float64, longitude floa
 func makeCmdLocationTransformer() *CmdLocationTransformer {
 	cmdLocationTransformer := new(CmdLocationTransformer)
 	cmd := exec.Command("cs2cs", "EPSG:4326", "EPSG:3575")
-	cmdLocationTransformer.stdout, _ = cmd.StdoutPipe()
+	pipe, _ := cmd.StdoutPipe()
+	cmdLocationTransformer.stdout = bufio.NewReader(pipe)
 	cmdLocationTransformer.stdin, _ = cmd.StdinPipe()
 	return cmdLocationTransformer
 }

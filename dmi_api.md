@@ -12,7 +12,7 @@ which is the default mode it is in upon opening the radar. It could look like
 </p>
 
 To help recognize the pattern between the API calls, I have recorded some of them below.
-- https://www.dmi.dk/ZoombareKort/map?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&TRANSPARENT=true&TIME=2024-11-08T18:35:00Z&LAYERS=radar&WIDTH=512&HEIGHT=512&SRS=EPSG:3575&STYLES=&BBOX=-406250,-4218750,250000,-3562500
+- https://www.dmi.dk/ZoombareKort/map?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&TRANSPARENT=true&TIME=2024-11-08T20:15:00Z&LAYERS=radar&WIDTH=512&HEIGHT=512&SRS=EPSG:3575&BBOX=-206250,-3918750,250000,-3562500
 
 It seems to me that `TIME` and `REFERENCE_TIME` are the two of which values
 change. `BBOX` is the bounding box and the coordinates are in the style of

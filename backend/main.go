@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -66,5 +67,22 @@ func main() {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})
+	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
+		location := getLocationFromRequest(r)
+		precipitation := getPrecipitationFor(location)
+		response, _ := json.Marshal(precipitation)
+		w.Write(response)
+	})
 	http.ListenAndServe("127.0.0.1:3000", r)
+}
+
+func getPrecipitationFor(location *Location) []int {
+	return nil
+}
+
+func getLocationFromRequest(r *http.Request) *Location {
+	decoder := json.NewDecoder(r.Body)
+	location := new(Location)
+	decoder.Decode(location)
+	return location
 }

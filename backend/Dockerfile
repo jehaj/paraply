@@ -3,10 +3,10 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY *.go ./
-RUN go build -o /will-rain
+RUN go build -o /paraply
 
 FROM ubuntu:latest
 
-COPY --from=builder /will-rain /will-rain
+COPY --from=builder /paraply /paraply
 USER nonroot:nonroot
-ENTRYPOINT ["/will-rain"]
+ENTRYPOINT ["/paraply"]

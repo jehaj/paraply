@@ -1,4 +1,4 @@
-# will-rain
+# Paraply
 Use DMI radar to notify if it is going to rain in the next hour.
 It is very similar to Dark Sky weather app, which was acquired
 by Apple in 2020 and gone from the app store in 2023.

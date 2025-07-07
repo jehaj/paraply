@@ -1,7 +1,9 @@
 # Paraply
 Use DMI radar to notify if it is going to rain in the next hour.
 It is very similar to Dark Sky weather app, which was acquired
-by Apple in 2020 and gone from the app store in 2023.
+by Apple in 2020 and gone from the app store in 2023 
+([Apple buys weather app Dark Sky | BBC](https://www.bbc.com/news/technology-52115095) 
+and [Dark Sky is done | Mashable](https://mashable.com/article/dark-sky-apple-weather)).
 
 ## What
 
@@ -31,10 +33,10 @@ Developing a proper app will also allow to create widgets and whatnot.
 
 ---
 
-It is developed in flutter such that it should easily be able to be
+It is developed in [flutter](https://flutter.dev/) such that it should easily be able to be
 distributed to iOS. My focus is Android, but it would be nice if
 both were supported.
 
 ### Backend
 
-It is created in go and tested with [go-chi.io](https://go-chi.io/#/pages/testing).
+It is created in [go](https://go.dev/) and tested with [go-chi.io](https://go-chi.io/#/pages/testing).

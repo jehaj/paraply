@@ -4,13 +4,15 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"io"
 	"net/http"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/twpayne/go-proj/v11"
 )
 
 type Map interface {
@@ -41,7 +43,7 @@ func (c *CmdLocationTransformer) EPSG4326To3575(latitude float64, longitude floa
 	input := fmt.Sprintf("%f %f", latitude, longitude)
 	c.stdin.Write([]byte(input))
 	output, _ := c.stdout.ReadString('\n')
-	outputs := strings.Split(output, "\n")
+	outputs := strings.Split(output, " ")
 	x, _ := strconv.ParseFloat(outputs[0], 64)
 	y, _ := strconv.ParseFloat(outputs[1], 64)
 	return int(x), int(y)
@@ -54,6 +56,31 @@ func makeCmdLocationTransformer() *CmdLocationTransformer {
 	cmdLocationTransformer.stdout = bufio.NewReader(pipe)
 	cmdLocationTransformer.stdin, _ = cmd.StdinPipe()
 	return cmdLocationTransformer
+}
+
+type ProjTransformer struct {
+	pj *proj.PJ
+}
+
+func (pj *ProjTransformer) EPSG4326To3575(latitude float64, longitude float64) (int, int) {
+	newCoord := proj.NewCoord(latitude, longitude, 408, 0)
+	resultingCoord, err := pj.pj.Forward(newCoord)
+	if err != nil {
+		panic(err)
+	}
+	x := resultingCoord.X()
+	y := resultingCoord.Y()
+	return int(x), int(y)
+}
+
+func makeProjTransformer() *ProjTransformer {
+	projTransformer := new(ProjTransformer)
+	pj, err := proj.NewCRSToCRS("EPSG:4326", "EPSG:3575", nil)
+	if err != nil {
+		panic(err)
+	}
+	projTransformer.pj = pj
+	return projTransformer
 }
 
 type Location struct {

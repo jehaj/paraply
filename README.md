@@ -5,6 +5,8 @@ by Apple in 2020 and gone from the app store in 2023
 ([Apple buys weather app Dark Sky | BBC](https://www.bbc.com/news/technology-52115095) 
 and [Dark Sky is done | Mashable](https://mashable.com/article/dark-sky-apple-weather)).
 
+![DMI Radar showing precipation over Denmark](images/map.png)
+
 ## What
 
 It checks your location and if it is going to rain soon according to
@@ -21,6 +23,10 @@ DMI's radar states where it is raining and predicts the next hour in
   it is going to rain in the next hour.
 
 ## How
+
+![Diagram showing an overview of the system: 
+  Request from user goes to server, which has stored data from DMI 
+  and responds based on that.](docs/overview.svg)
 
 ### Frontend
 

@@ -7,6 +7,20 @@ and [Dark Sky is done | Mashable](https://mashable.com/article/dark-sky-apple-we
 
 ![DMI Radar showing precipation over Denmark](images/map.png)
 
+> [!NOTE]
+> Diagrams made with d2, do not show up in GitHub, as they currently
+> are not built and stored in the repository (ignored in .gitignore).
+> You can build them yourself using `make docs` after cloning if you
+> have d2 on path. Information on how to install it can be found at 
+> [d2lang.com](https://d2lang.com/tour/install).
+> 
+> A pre-commit hook already exists that builds them before commiting.
+> If not then create `.git/hooks/pre-commit` with the contents
+> ```
+> #! /bin/sh
+> exec -l make docs
+> ```
+
 ## What
 
 It checks your location and if it is going to rain soon according to

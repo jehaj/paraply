@@ -90,6 +90,20 @@ type Location struct {
 	Longitude float64
 }
 
+// RainData stores a snapshop of the rain in the world of radar
+// where it is indexed such that
+// 2 3
+// 0 1  <--  🗺️
+// Because index 3 is not needed as Denmark has a funny shape.
+// This way Jylland, Fyn, Sjælland and Bornholm are covered, and
+// not some of Sweden.
+type RainData = [][]int
+
+// TimelineRainData contains the next hour worth of RainData in
+// 5 minute increments.
+type TimelineRainData = []RainData
+
+
 func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)

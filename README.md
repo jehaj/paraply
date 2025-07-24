@@ -60,3 +60,8 @@ both were supported.
 ### Backend
 
 It is created in [go](https://go.dev/) and tested with [go-chi.io](https://go-chi.io/#/pages/testing).
+
+# Notice on usage of LLMs
+Some commits to this repository uses LLMs to write code. The specific model is the one provided by default by Gemini Code Assist in VS Code.
+
+Commits featuring contributions by LLMs should state this.

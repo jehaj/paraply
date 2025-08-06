@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -22,16 +23,6 @@ type Map interface {
 
 type LocationTransformer interface {
 	EPSG4326To3575(latitude float64, longitude float64) (int, int)
-}
-
-type StubLocationTransformer struct{}
-
-func (s *StubLocationTransformer) EPSG4326To3575(latitude float64, longitude float64) (int, int) {
-	return 8936, -3721180
-}
-
-func makeStubLocationTransformer() *StubLocationTransformer {
-	return new(StubLocationTransformer)
 }
 
 type CmdLocationTransformer struct {
@@ -103,8 +94,11 @@ type RainData = [][]int
 // 5 minute increments.
 type TimelineRainData = []RainData
 
+const DEFAULT_IP = "127.0.0.1"
+const DEFAULT_PORT_NUMBER = "3000"
 
 func main() {
+	addr := get_addr()
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +110,21 @@ func main() {
 		response, _ := json.Marshal(precipitation)
 		w.Write(response)
 	})
-	http.ListenAndServe("127.0.0.1:3000", r)
+	fmt.Printf("Listening on %s\n", addr)
+	http.ListenAndServe(addr, r)
+}
+
+func get_addr() string {
+	ip := DEFAULT_IP
+	if len(os.Args) > 2 {
+		ip = os.Args[2]
+	}
+	port_number := DEFAULT_PORT_NUMBER
+	if len(os.Args) > 1 {
+		port_number = os.Args[1]
+	}
+	addr := fmt.Sprintf("%s:%s", ip, port_number)
+	return addr
 }
 
 func getPrecipitationFor(location *Location) []int {

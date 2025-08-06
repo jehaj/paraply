@@ -4,6 +4,16 @@ import (
 	"testing"
 )
 
+type StubLocationTransformer struct{}
+
+func (s *StubLocationTransformer) EPSG4326To3575(latitude float64, longitude float64) (int, int) {
+	return 8936, -3721180
+}
+
+func makeStubLocationTransformer() *StubLocationTransformer {
+	return new(StubLocationTransformer)
+}
+
 func TestExample(t *testing.T) {
 	t.Log("It is very much working.")
 }

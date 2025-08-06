@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"time"
 )
 
 type StubLocationTransformer struct{}
@@ -38,6 +39,15 @@ func TestCmd(t *testing.T) {
 	x, y := cmdTransformer.EPSG4326To3575(lat, lon)
 	if x != 13689 && y != -3721342 {
 		t.Log("Expected 13689, -3721342, got", x, y)
+		t.Fail()
+	}
+}
+
+func TestEncodingOfTime(t *testing.T) {
+	t1 := time.Date(2025, time.July, 7, 12, 20, 0, 0, time.UTC)
+	encodedTime := encodeTime(t1)
+	if encodedTime != "2025-07-07T12%3A20%3A00Z" {
+		t.Logf("Expected 2025-07-07T12%%3A20%%3A00Z, got %s", encodedTime)
 		t.Fail()
 	}
 }

@@ -82,12 +82,8 @@ type Location struct {
 }
 
 // RainData stores a snapshop of the rain in the world of radar
-// where it is indexed such that
-// 2 3
-// 0 1  <--  🗺️
-// Because index 3 is not needed as Denmark has a funny shape.
-// This way Jylland, Fyn, Sjælland and Bornholm are covered, and
-// not some of Sweden.
+// where it is indexed such that the first index is y and the
+// second index is x.
 type RainData = [][]int
 
 // TimelineRainData contains the next hour worth of RainData in

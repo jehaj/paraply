@@ -33,7 +33,7 @@ func sendRequestForImageAt(t time.Time, rt time.Time) []byte {
 	rt = rt.Truncate(5 * time.Minute)
 	encodedTime := encodeTime(t)
 	encodedReferenceTime := encodeTime(rt)
-	url := fmt.Sprintf("https://www.dmi.dk/ZoombareKort/map?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%%2Fpng&TRANSPARENT=true&TIME=%s&REFERENCE_TIME=%s&LAYERS=nowcast_radar&WIDTH=512&HEIGHT=512&SRS=EPSG%%3A3575&BBOX=-406250%%2C-4218750%%2C250000%%2C-3562500&STYLES=", encodedTime, encodedReferenceTime)
+	url := fmt.Sprintf("https://www.dmi.dk/ZoombareKort/map?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%%2Fpng&TRANSPARENT=true&TIME=%s&REFERENCE_TIME=%s&LAYERS=nowcast_radar&WIDTH=512&HEIGHT=512&SRS=EPSG%%3A3575&BBOX=-406250%%2C-4218750%%2C250000%%2C-3562500", encodedTime, encodedReferenceTime)
 
 	req, _ := http.NewRequest("GET", url, nil)
 

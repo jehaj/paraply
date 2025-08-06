@@ -51,3 +51,12 @@ func TestEncodingOfTime(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestTruncatingOfTime(t *testing.T) {
+	t1 := time.Date(2025, time.August, 6, 19, 44, 30, 2, time.UTC)
+	t1 = t1.Truncate(5 * time.Minute)
+	encodedTime := encodeTime(t1)
+	if got, want := encodedTime, "2025-08-06T19%3A40%3A00Z"; got != want {
+		t.Errorf("Expected %s, got %s", want, got)
+	}
+}

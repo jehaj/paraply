@@ -8,8 +8,8 @@ import (
 )
 
 func TestRequestReturnsBody(t *testing.T) {
-	t1 := time.Now()
-	response := sendRequestForImageAt(t1, t1)
+	t1 := time.Now().UTC()
+	response, _ := sendRequestForImageAt(t1, t1)
 	os.WriteFile("test_gen/test_now.png", response, 0644)
 	if len(response) < 10 {
 		t.Log("Response length should be at least 10, but is", len(response))
@@ -18,11 +18,11 @@ func TestRequestReturnsBody(t *testing.T) {
 }
 
 func TestRequestNextHour(t *testing.T) {
-	rt := time.Now()
-	time1 := time.Now()
+	rt := time.Now().UTC()
+	time1 := time.Now().UTC()
 	for i := 0; time1.Before(rt.Add(30 * time.Minute)); i++ {
 		time1 = time1.Add(5 * time.Minute)
-		response := sendRequestForImageAt(time1, rt)
+		response, _ := sendRequestForImageAt(time1, rt)
 		filename := fmt.Sprintf("test_gen/test_now_%d.png", i)
 		os.WriteFile(filename, response, 0644)
 	}

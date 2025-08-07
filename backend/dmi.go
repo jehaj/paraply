@@ -204,7 +204,22 @@ func encodeTime(t time.Time) string {
 	return encodedTime
 }
 
-func (d *DMIMap) GetPrecipitationAt(location Location) {
-	//TODO implement me
-	panic("implement me")
+func (d *DMIMap) GetPrecipitationAt(location Location) ([]int, error) {
+	bounds := getBounds()
+	projTransformer := makeProjTransformer()
+	x, y := projTransformer.EPSG4326To3575(location.Latitude, location.Longitude)
+	// (x-bounds.left)/(bounds.right-bounds.left) will be between [0, 1], but
+	// as it is integer division this will not have the intended result. It 
+	// can be fixed (TODO) by changing to float. Another choice is to change
+	// the form of the equation and then we can still use ints.
+	tx := (x-bounds.left)/(bounds.right-bounds.left)*(512-0) + 0
+	ty := (y-bounds.bottom)/(bounds.top-bounds.bottom)*(512-0) + 0
+	if (tx < 0 || tx >= 512) || (ty < 0 || ty >= 512) {
+		return nil, fmt.Errorf("location out of bounds")
+	}
+	precipitation := make([]int, len(d.TimelineRainData))
+	for i, rainData := range d.TimelineRainData {
+		precipitation[i] = rainData[ty][tx]
+	}
+	return precipitation, nil
 }

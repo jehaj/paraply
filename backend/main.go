@@ -18,7 +18,7 @@ import (
 
 type Map interface {
 	UpdateMap()
-	GetPrecipitationAt(location Location)
+	GetPrecipitationAt(location Location) ([]int, error)
 }
 
 type LocationTransformer interface {

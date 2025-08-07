@@ -16,6 +16,19 @@ type DMIMap struct {
 	TimelineRainData TimelineRainData
 }
 
+type DMIBounds struct {
+	left, bottom, right, top int
+}
+
+func getBounds() DMIBounds {
+	return DMIBounds{
+		left:   -406250,
+		bottom: -4218750,
+		right:  250000,
+		top:    -3562500,
+	}
+}
+
 // UpdateMap gets new data from DMI and updates the TimelineRainData.
 // To minimise the risk of getting 429 Too Many Requests, we wait one
 // second between every request. This also means that this function
@@ -147,7 +160,17 @@ func sendRequestForImageAt(t time.Time, rt time.Time) ([]byte, error) {
 	log.Printf("Requesting image for time %s, reference time %s\n", t.Format(time.RFC3339), rt.Format(time.RFC3339))
 	encodedTime := encodeTime(t)
 	encodedReferenceTime := encodeTime(rt)
-	url := fmt.Sprintf("https://www.dmi.dk/ZoombareKort/map?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%%2Fpng&TRANSPARENT=true&TIME=%s&REFERENCE_TIME=%s&LAYERS=nowcast_radar&WIDTH=512&HEIGHT=512&SRS=EPSG%%3A3575&BBOX=-406250%%2C-4218750%%2C250000%%2C-3562500", encodedTime, encodedReferenceTime)
+	bounds := getBounds()
+	url := fmt.Sprintf("https://www.dmi.dk/ZoombareKort/map?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%%2Fpng&TRANSPARENT=true&"+
+		"TIME=%s&"+
+		"REFERENCE_TIME=%s&LAYERS=nowcast_radar&WIDTH=512&HEIGHT=512&SRS=EPSG%%3A3575&"+
+		"BBOX=%d%%2C%d%%2C%d%%2C%d",
+		encodedTime,
+		encodedReferenceTime,
+		bounds.left,
+		bounds.bottom,
+		bounds.right,
+		bounds.top)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

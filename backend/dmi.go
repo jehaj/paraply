@@ -214,8 +214,13 @@ func (d *DMIMap) GetPrecipitationAt(location Location) ([]int, error) {
 	// the form of the equation and then we can still use ints.
 	tx := int(float64(x-bounds.left)/float64(bounds.right-bounds.left)*(512-0) + 0)
 	ty := int(float64(y-bounds.bottom)/float64(bounds.top-bounds.bottom)*(512-0) + 0)
+	ty = 511 - ty // Invert y-axis, as the image coordinates have the origin at the top-left corner.
 	if (tx < 0 || tx >= 512) || (ty < 0 || ty >= 512) {
-		return nil, fmt.Errorf("location out of bounds")
+		return nil, fmt.Errorf("location out of bounds with coordinates (%d, %d) "+
+			"for bounds (%d, %d, %d, %d) given location (%v, %v)",
+			tx, ty,
+			bounds.left, bounds.bottom, bounds.right, bounds.top,
+			location.Latitude, location.Longitude)
 	}
 	precipitation := make([]int, len(d.TimelineRainData))
 	for i, rainData := range d.TimelineRainData {

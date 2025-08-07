@@ -94,3 +94,188 @@ func TestPrintRainDataForVisualInspection(t *testing.T) {
 	}
 	t.Log("--- End of Grid ---")
 }
+
+// TestGetPrecipitationAt tests the GetPrecipitationAt function using the test_future_*.png files
+func TestGetPrecipitationAt(t *testing.T) {
+	// Load all test_future_*.png files and convert them to RainData
+	timelineRainData := make(TimelineRainData, 0)
+
+	for i := 0; i < 12; i++ {
+		testImagePath := filepath.Join("test_files", fmt.Sprintf("test_future_%d.png", i))
+		data, err := os.ReadFile(testImagePath)
+		if err != nil {
+			t.Fatalf("Failed to read test image '%s': %v", testImagePath, err)
+		}
+
+		rainData := imgToRainData(data)
+		if rainData == nil {
+			t.Fatalf("imgToRainData returned nil for image %s", testImagePath)
+		}
+
+		timelineRainData = append(timelineRainData, rainData)
+	}
+
+	// Create a DMIMap with the test data
+	dmiMap := &DMIMap{
+		TimelineRainData: timelineRainData,
+	}
+
+	// Test cases with different locations
+	testCases := []struct {
+		name      string
+		location  Location
+		shouldErr bool
+	}{
+		{
+			name: "Valid location in Denmark (Aarhus)",
+			location: Location{
+				Latitude:  56.15674,
+				Longitude: 10.21076,
+			},
+			shouldErr: false,
+		},
+		{
+			name: "Valid location in Denmark (Copenhagen)",
+			location: Location{
+				Latitude:  55.6761,
+				Longitude: 12.5683,
+			},
+			shouldErr: false,
+		},
+		{
+			name: "Invalid location (outside bounds)",
+			location: Location{
+				Latitude:  70.0,
+				Longitude: 30.0,
+			},
+			shouldErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			precipitation, err := dmiMap.GetPrecipitationAt(tc.location)
+
+			if tc.shouldErr {
+				if err == nil {
+					t.Errorf("Expected error for location (%f, %f), but got none", tc.location.Latitude, tc.location.Longitude)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error for location (%f, %f): %v", tc.location.Latitude, tc.location.Longitude, err)
+				return
+			}
+
+			// Verify that we get precipitation data for all time points
+			if len(precipitation) != len(timelineRainData) {
+				t.Errorf("Expected precipitation data for %d time points, got %d", len(timelineRainData), len(precipitation))
+			}
+
+			// Verify that all precipitation values are non-negative
+			for i, value := range precipitation {
+				if value < 0 {
+					t.Errorf("Expected non-negative precipitation value at time %d, got %d", i, value)
+				}
+			}
+
+			t.Logf("Location (%f, %f) precipitation values: %v", tc.location.Latitude, tc.location.Longitude, precipitation)
+		})
+	}
+}
+
+// TestGetPrecipitationAt tests the GetPrecipitationAt function for Ballerup using the test_future_*.png files
+func TestGetPrecipitationAtInBallerup(t *testing.T) {
+	// Load all test_future_*.png files and convert them to RainData
+	timelineRainData := make(TimelineRainData, 0)
+
+	for i := 0; i < 12; i++ {
+		testImagePath := filepath.Join("test_files", fmt.Sprintf("test_future_%d.png", i))
+		data, err := os.ReadFile(testImagePath)
+		if err != nil {
+			t.Fatalf("Failed to read test image '%s': %v", testImagePath, err)
+		}
+
+		rainData := imgToRainData(data)
+		if rainData == nil {
+			t.Fatalf("imgToRainData returned nil for image %s", testImagePath)
+		}
+
+		timelineRainData = append(timelineRainData, rainData)
+	}
+
+	// Create a DMIMap with the test data
+	dmiMap := &DMIMap{
+		TimelineRainData: timelineRainData,
+	}
+
+	// Test cases with different locations
+	location := Location{
+		Latitude:  55.7243,
+		Longitude: 12.3561,
+	}
+
+	incomingRain, err := dmiMap.GetPrecipitationAt(location)
+	if err != nil {
+		t.Fatalf("Unexpected error for location (%f, %f): %v", location.Latitude, location.Longitude, err)
+	}
+	t.Logf("Incoming rain for Ballerup: %v", incomingRain)
+	expected := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 3}
+	if got := incomingRain; len(got) != len(expected) {
+		t.Fatalf("Expected %d time points, got %d", len(expected), len(got))
+	} else {
+		for i := range got {
+			if got[i] != expected[i] {
+				t.Errorf("At time point %d, expected %d, got %d", i, expected[i], got[i])
+			}
+		}
+	}
+}
+
+// TestGetPrecipitationAtBoundaryConditions tests the GetPrecipitationAt function with edge cases
+func TestGetPrecipitationAtBoundaryConditions(t *testing.T) {
+	// Create minimal test data - just one time point
+	testImagePath := filepath.Join("test_files", "test_future_0.png")
+	data, err := os.ReadFile(testImagePath)
+	if err != nil {
+		t.Fatalf("Failed to read test image '%s': %v", testImagePath, err)
+	}
+
+	rainData := imgToRainData(data)
+	if rainData == nil {
+		t.Fatal("imgToRainData returned nil")
+	}
+
+	timelineRainData := TimelineRainData{rainData}
+	dmiMap := &DMIMap{
+		TimelineRainData: timelineRainData,
+	}
+
+	// Test with empty TimelineRainData
+	emptyDmiMap := &DMIMap{
+		TimelineRainData: TimelineRainData{},
+	}
+
+	validLocation := Location{
+		Latitude:  56.15674,
+		Longitude: 10.21076,
+	}
+
+	precipitation, err := emptyDmiMap.GetPrecipitationAt(validLocation)
+	if err != nil {
+		t.Errorf("Unexpected error with empty timeline data: %v", err)
+	}
+	if len(precipitation) != 0 {
+		t.Errorf("Expected empty precipitation array, got length %d", len(precipitation))
+	}
+
+	// Test with valid location and single time point
+	precipitation, err = dmiMap.GetPrecipitationAt(validLocation)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if len(precipitation) != 1 {
+		t.Errorf("Expected precipitation array of length 1, got %d", len(precipitation))
+	}
+}

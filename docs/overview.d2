@@ -1,0 +1,18 @@
+Paraply: {
+  shape: sequence_diagram
+  phone: Phone
+  server: Server
+  dmi: DMI
+
+  update: {
+    server -> dmi: Give newest data
+    server <- dmi: There you go!
+    server.c -> server.c: Transform
+  }
+
+  request: {
+    phone -> server: Going to rain at <location>?
+    server.d -> server.d: Retrieving
+    phone <- server: Here you go <array of rain p.>
+  }
+}

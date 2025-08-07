@@ -4,32 +4,25 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"io"
 	"net/http"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/twpayne/go-proj/v11"
 )
 
 type Map interface {
 	UpdateMap()
-	GetPrecipitationAt(location Location)
+	GetPrecipitationAt(location Location) ([]int, error)
 }
 
 type LocationTransformer interface {
 	EPSG4326To3575(latitude float64, longitude float64) (int, int)
-}
-
-type StubLocationTransformer struct{}
-
-func (s *StubLocationTransformer) EPSG4326To3575(latitude float64, longitude float64) (int, int) {
-	return 8936, -3721180
-}
-
-func makeStubLocationTransformer() *StubLocationTransformer {
-	return new(StubLocationTransformer)
 }
 
 type CmdLocationTransformer struct {
@@ -38,10 +31,11 @@ type CmdLocationTransformer struct {
 }
 
 func (c *CmdLocationTransformer) EPSG4326To3575(latitude float64, longitude float64) (int, int) {
-	input := fmt.Sprintf("%f %f", latitude, longitude)
+	input := fmt.Sprintf("%f %f\n", latitude, longitude)
 	c.stdin.Write([]byte(input))
 	output, _ := c.stdout.ReadString('\n')
-	outputs := strings.Split(output, "\n")
+	outputs := strings.Split(output, "\t")
+	outputs[1] = strings.Split(outputs[1], " ")[0]
 	x, _ := strconv.ParseFloat(outputs[0], 64)
 	y, _ := strconv.ParseFloat(outputs[1], 64)
 	return int(x), int(y)
@@ -53,7 +47,33 @@ func makeCmdLocationTransformer() *CmdLocationTransformer {
 	pipe, _ := cmd.StdoutPipe()
 	cmdLocationTransformer.stdout = bufio.NewReader(pipe)
 	cmdLocationTransformer.stdin, _ = cmd.StdinPipe()
+	cmd.Start()
 	return cmdLocationTransformer
+}
+
+type ProjTransformer struct {
+	pj *proj.PJ
+}
+
+func (pj *ProjTransformer) EPSG4326To3575(latitude float64, longitude float64) (int, int) {
+	newCoord := proj.NewCoord(latitude, longitude, 408, 0)
+	resultingCoord, err := pj.pj.Forward(newCoord)
+	if err != nil {
+		panic(err)
+	}
+	x := resultingCoord.X()
+	y := resultingCoord.Y()
+	return int(x), int(y)
+}
+
+func makeProjTransformer() *ProjTransformer {
+	projTransformer := new(ProjTransformer)
+	pj, err := proj.NewCRSToCRS("EPSG:4326", "EPSG:3575", nil)
+	if err != nil {
+		panic(err)
+	}
+	projTransformer.pj = pj
+	return projTransformer
 }
 
 type Location struct {
@@ -61,7 +81,21 @@ type Location struct {
 	Longitude float64
 }
 
+// RainData stores a snapshop of the rain in the world of radar
+// where it is indexed such that the first index is y and the
+// second index is x. It goes from 0 to 17, where 0 is no rain,
+// and 17 is the most rain.
+type RainData = [][]int
+
+// TimelineRainData contains the next hour worth of RainData in
+// 5 minute increments.
+type TimelineRainData = []RainData
+
+const DefaultIp = "127.0.0.1"
+const DefaultPortNumber = "3000"
+
 func main() {
+	addr := getAddr()
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +107,21 @@ func main() {
 		response, _ := json.Marshal(precipitation)
 		w.Write(response)
 	})
-	http.ListenAndServe("127.0.0.1:3000", r)
+	fmt.Printf("Listening on %s\n", addr)
+	http.ListenAndServe(addr, r)
+}
+
+func getAddr() string {
+	ip := DefaultIp
+	if len(os.Args) > 2 {
+		ip = os.Args[2]
+	}
+	portNumber := DefaultPortNumber
+	if len(os.Args) > 1 {
+		portNumber = os.Args[1]
+	}
+	addr := fmt.Sprintf("%s:%s", ip, portNumber)
+	return addr
 }
 
 func getPrecipitationFor(location *Location) []int {

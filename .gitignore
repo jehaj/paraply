@@ -1,5 +1,6 @@
 *.svg
 *.png
+!backend/test_files/radar_rain.png
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,windows,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,windows,macos

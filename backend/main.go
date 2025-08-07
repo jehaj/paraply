@@ -83,7 +83,8 @@ type Location struct {
 
 // RainData stores a snapshop of the rain in the world of radar
 // where it is indexed such that the first index is y and the
-// second index is x.
+// second index is x. It goes from 0 to 17, where 0 is no rain,
+// and 17 is the most rain.
 type RainData = [][]int
 
 // TimelineRainData contains the next hour worth of RainData in

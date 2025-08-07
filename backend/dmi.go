@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"image"
+	_ "image/png"
 	"io"
 	"log"
 	"net/http"
@@ -48,12 +51,84 @@ func getRainDataForTime(t time.Time, rt time.Time) (RainData, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not get image data for time %v: %w", t, err)
 	}
-	rainData := imgToRainData(data, t)
+	rainData := imgToRainData(data)
 	return rainData, nil
 }
 
-func imgToRainData(data []byte, t time.Time) RainData {
-	panic("implement me")
+type Color struct {
+	R, G, B int
+}
+
+func imgToRainData(data []byte) RainData {
+	rainColors := []Color{
+		{92, 0, 51},
+		{128, 0, 0},
+		{204, 31, 31},
+		{230, 57, 57},
+		{255, 82, 82},
+		{255, 124, 124},
+		{255, 181, 181},
+		{255, 142, 82},
+		{255, 178, 0},
+		{255, 217, 0},
+		{0, 143, 233},
+		{61, 171, 238},
+		{109, 191, 242},
+		{22, 225, 204},
+		{125, 238, 226},
+		{158, 242, 233},
+	}
+
+	img, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		log.Printf("failed to decode image: %v", err)
+		return nil
+	}
+
+	// Create a 2D slice to hold the rain intensity data, matching the image dimensions.
+	imgHeight := img.Bounds().Dy()
+	imgWidth := img.Bounds().Dx()
+
+	const colorMatchMargin = 40
+
+	rainData := make(RainData, imgHeight)
+
+	// Iterate over each pixel of the image.
+	for y := 0; y < imgHeight; y++ {
+		rainData[y] = make([]int, imgWidth)
+		for x := 0; x < imgWidth; x++ {
+			// Get the color of the pixel. Note that RGBA() returns values in the
+			// range [0, 65535], not [0, 255], so we need to scale them.
+			r, g, b, _ := img.At(x, y).RGBA()
+			r8, g8, b8 := uint8(r>>8), uint8(g>>8), uint8(b>>8)
+
+			// Compare the pixel color with the predefined rain colors, iterating backwards
+			// to check for lighter rain first.
+			// TODO make different choosing algorithms... this works badly. Check which
+			// color it is closest to and choose that.
+			numberOfColors := len(rainColors)
+			for i, color := range rainColors {
+				// If a match is found within a certain margin, store the color's index.
+				// This accounts for minor color variations from compression artifacts.
+				if abs(int(r8)-color.R) <= colorMatchMargin &&
+					abs(int(g8)-color.G) <= colorMatchMargin &&
+					abs(int(b8)-color.B) <= colorMatchMargin {
+					rainData[y][x] = numberOfColors - i
+					break
+				}
+			}
+		}
+	}
+
+	return rainData
+}
+
+// abs returns the absolute value of x.
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 // sendRequestForImageAt constructs and sends a GET request to the DMI weather

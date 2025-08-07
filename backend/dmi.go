@@ -209,11 +209,11 @@ func (d *DMIMap) GetPrecipitationAt(location Location) ([]int, error) {
 	projTransformer := makeProjTransformer()
 	x, y := projTransformer.EPSG4326To3575(location.Latitude, location.Longitude)
 	// (x-bounds.left)/(bounds.right-bounds.left) will be between [0, 1], but
-	// as it is integer division this will not have the intended result. It 
+	// as it is integer division this will not have the intended result. It
 	// can be fixed (TODO) by changing to float. Another choice is to change
 	// the form of the equation and then we can still use ints.
-	tx := (x-bounds.left)/(bounds.right-bounds.left)*(512-0) + 0
-	ty := (y-bounds.bottom)/(bounds.top-bounds.bottom)*(512-0) + 0
+	tx := int(float64(x-bounds.left)/float64(bounds.right-bounds.left)*(512-0) + 0)
+	ty := int(float64(y-bounds.bottom)/float64(bounds.top-bounds.bottom)*(512-0) + 0)
 	if (tx < 0 || tx >= 512) || (ty < 0 || ty >= 512) {
 		return nil, fmt.Errorf("location out of bounds")
 	}

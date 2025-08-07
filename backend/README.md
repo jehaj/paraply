@@ -4,7 +4,7 @@ As noted in the main README the backend is created with Go.
 
 ## How
 
-Query DMI public radar, which forecasts precipation for the next hour and use that.
+Query DMI public radar, which forecasts precipitation for the next hour and use that.
 
 ### Alternative
 

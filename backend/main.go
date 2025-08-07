@@ -91,11 +91,11 @@ type RainData = [][]int
 // 5 minute increments.
 type TimelineRainData = []RainData
 
-const DEFAULT_IP = "127.0.0.1"
-const DEFAULT_PORT_NUMBER = "3000"
+const DefaultIp = "127.0.0.1"
+const DefaultPortNumber = "3000"
 
 func main() {
-	addr := get_addr()
+	addr := getAddr()
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -111,16 +111,16 @@ func main() {
 	http.ListenAndServe(addr, r)
 }
 
-func get_addr() string {
-	ip := DEFAULT_IP
+func getAddr() string {
+	ip := DefaultIp
 	if len(os.Args) > 2 {
 		ip = os.Args[2]
 	}
-	port_number := DEFAULT_PORT_NUMBER
+	portNumber := DefaultPortNumber
 	if len(os.Args) > 1 {
-		port_number = os.Args[1]
+		portNumber = os.Args[1]
 	}
-	addr := fmt.Sprintf("%s:%s", ip, port_number)
+	addr := fmt.Sprintf("%s:%s", ip, portNumber)
 	return addr
 }
 

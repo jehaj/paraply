@@ -161,7 +161,7 @@ func sendRequestForImageAt(t time.Time, rt time.Time) ([]byte, error) {
 	encodedTime := encodeTime(t)
 	encodedReferenceTime := encodeTime(rt)
 	bounds := getBounds()
-	url := fmt.Sprintf("https://www.dmi.dk/ZoombareKort/map?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%%2Fpng&TRANSPARENT=true&"+
+	urlFormatted := fmt.Sprintf("https://www.dmi.dk/ZoombareKort/map?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%%2Fpng&TRANSPARENT=true&"+
 		"TIME=%s&"+
 		"REFERENCE_TIME=%s&LAYERS=nowcast_radar&WIDTH=512&HEIGHT=512&SRS=EPSG%%3A3575&"+
 		"BBOX=%d%%2C%d%%2C%d%%2C%d",
@@ -172,7 +172,7 @@ func sendRequestForImageAt(t time.Time, rt time.Time) ([]byte, error) {
 		bounds.right,
 		bounds.top)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", urlFormatted, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +204,7 @@ func encodeTime(t time.Time) string {
 	return encodedTime
 }
 
-func (d DMIMap) GetPrecipitationAt(location Location) {
+func (d *DMIMap) GetPrecipitationAt(location Location) {
 	//TODO implement me
 	panic("implement me")
 }
